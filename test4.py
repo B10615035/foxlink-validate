@@ -2,7 +2,7 @@ import mysql.connector
 import pandas as pd
 from datetime import datetime
 
-ip = '127.0.0.1'
+ip = '140.118.157.9'
 
 connection = mysql.connector.connect(
 host = ip,

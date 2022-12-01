@@ -2,7 +2,7 @@ import mysql.connector
 import pandas as pd
 from datetime import datetime
 
-ip = "127.0.0.1"
+ip = '140.118.157.9'
 
 connection = mysql.connector.connect(
 host = ip,
@@ -86,13 +86,13 @@ for index, row in table_log.iterrows():
         
 for index, row in table_audit.iterrows():
     if row['action'] == 'MISSION_ASSIGNED':
-        result_user[row['user']]['assign'] = row['created_date']
-        result_user[row['user']]['mission_id'] = row['record_pk']
+        result_user[row['user']]['assign'].append(row['created_date'])
+        result_user[row['user']]['mission_id'].append(row['record_pk'])
         
 for index, row in table_mission.iterrows():
     if row['worker'] != None:
-        result_user[row['worker']]['repair_start_date'] = row['repair_beg_date']
-        result_user[row['worker']]['repair_end_date'] = row['repair_end_date']
+        result_user[row['worker']]['repair_start_date'].append(row['repair_beg_date'])
+        result_user[row['worker']]['repair_end_date'].append(row['repair_end_date'])
     
 for i in range(1, USER_NUMBER + 1):
     name = 'C0{}'.format(str(i).zfill(3))
@@ -146,7 +146,7 @@ for m in mission_id:
         'acept_date': accept_date,
         'is_accept': True if accept_date else False
     }
-    
+
 for index, row in table_mission.iterrows():
     result_mission[row['id']] = {
         'mission_id': row['id'],
@@ -156,8 +156,8 @@ for index, row in table_mission.iterrows():
         'assignee': row['worker'],
         'is_accept': mission[row['id']]['is_accept']
     }
-if mission[row['id']]['is_accept']:
-    period.append((mission[row['id']]['assign_date'] - row['created_date']) / pd.Timedelta(seconds=1))
+    if mission[row['id']]['is_accept']:
+        period.append((mission[row['id']]['assign_date'] - row['created_date']) / pd.Timedelta(seconds=1))
 
 answer_mission = pd.DataFrame.from_dict(result_mission, orient='index')
 print('\n\n========== MISSION BASE ==========\n\n')
@@ -167,7 +167,7 @@ print('\n\n========== CREATED -> ASSIGN AVG ==========')
 print(sum(period) / len(period))
 
 cursor = connection.cursor()
-mySql_insert_query = f"""SELECT * FROM testing_api.missions m WHERE repair_beg_date IS NULL AND is_cancel = 0"""
+mySql_insert_query = f"""SELECT * FROM testing_api.missions m WHERE repair_beg_date IS NULL AND is_done = 0"""
 cursor.execute(mySql_insert_query)
 not_assign_mission = cursor.fetchall()
 
